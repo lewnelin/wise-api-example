@@ -1,101 +1,203 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState, useEffect } from "react";
+import WiseApi from "wise-api";
+
+const Page = () => {
+  const [wiseApiInstance, setWiseApiInstance] = useState<any>(); // Armazena a instância da WiseApi
+  const [session, setSession] = useState<any>(); // Armazena a sessão
+  const [response, setResponse] = useState<any>();
+  const [error, setError] = useState<string>();
+
+  // Inicializar WiseApi
+  const initializeWiseApi = async () => {
+    try {
+      const instance = await WiseApi({
+        baseUrl: "https://session-manager.homolog.v4h.cloud/api/v1",
+        domain: "conf.homolog.v4h.cloud",
+        login: "59933074-0190-45e9-bf8f-c523150e2894",
+        password: "kTvI-xadJsJt",
+        type: "ORG",
+      });
+      setWiseApiInstance(instance);
+    } catch (err: any) {
+      setError("Falha ao inicializar WiseApi. Verifique as configurações.");
+    }
+  };
+
+  // Criar uma sessão
+  const handleCreateSession = async () => {
+    if (!wiseApiInstance) {
+      setError("WiseApi não inicializado.");
+      return;
+    }
+
+    try {
+      const sessionResponse = await wiseApiInstance.session.create({
+        org: "CUBO",
+        orgUnit: "CUBO",
+      });
+
+      setSession(sessionResponse); // Armazena o objeto completo da sessão
+      setResponse({
+        message: "Sessão criada com sucesso.",
+        session: sessionResponse,
+      });
+      setError("");
+    } catch (err: any) {
+      setError("Erro ao criar a sessão. Verifique os dados.");
+    }
+  };
+
+  // Iniciar videoconferência
+  const handleStartConference = async () => {
+    if (!wiseApiInstance || !session) {
+      setError("Sessão não encontrada. Crie uma sessão antes de iniciar a videoconferência.");
+      return;
+    }
+
+    try {
+      const conferenceResponse = await wiseApiInstance.session.startConference(session.short, {
+        parentNode: document.getElementById("meet"),
+        userInfo: { displayName: "Arthur da Cubo" },
+        width: 800,
+        height: 600,
+        shareLink: "pegar link da conferência",
+        buttons: [
+          "camera",
+          "chat",
+          "desktop",
+          "fullscreen",
+          "hangup",
+          "help",
+          "highlight",
+          "invite",
+          "microphone",
+          "participants-pane",
+          "profile",
+          "raisehand",
+          "recording",
+          "security",
+          "select-background",
+          "settings",
+          "shareaudio",
+          "sharedvideo",
+          "shortcuts",
+          "stats",
+          "tileview",
+          "toggle-camera",
+          "videoquality",
+          "libras",
+        ],
+      });
+
+      setResponse({
+        ...conferenceResponse,
+        message: "Videoconferência iniciada com sucesso.",
+      });
+      setError(null);
+    } catch (err: any) {
+      setError("Erro ao iniciar a videoconferência. Verifique os dados.");
+    }
+  };
+
+  // Limpar a resposta
+  const handleClearResponse = () => {
+    setResponse(null);
+    setError(null);
+  };
+
+  useEffect(() => {
+    initializeWiseApi();
+  }, []);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div style={{ fontFamily: "Arial, sans-serif", padding: "20px" }}>
+      <h1>Wise API - Videoconferência</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      <div style={{ marginBottom: "20px" }}>
+        <button
+          onClick={handleCreateSession}
+          style={{
+            padding: "10px 20px",
+            background: "#0070f3",
+            color: "#fff",
+            border: "none",
+            cursor: "pointer",
+            marginRight: "10px",
+          }}
+        >
+          Criar Sessão
+        </button>
+
+        <button
+          onClick={handleStartConference}
+          style={{
+            padding: "10px 20px",
+            background: "#28a745",
+            color: "#fff",
+            border: "none",
+            cursor: "pointer",
+            marginRight: "10px",
+          }}
+        >
+          Iniciar Videoconferência
+        </button>
+
+        <button
+          onClick={handleClearResponse}
+          style={{
+            padding: "10px 20px",
+            background: "#dc3545",
+            color: "#fff",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          Limpar Resposta
+        </button>
+      </div>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {response && (
+        <div
+          style={{
+            marginTop: "20px",
+            padding: "10px",
+            backgroundColor: "#000",
+            color: "#0f0",
+            borderRadius: "4px",
+            overflowX: "auto",
+            border: "1px solid #0f0",
+          }}
+        >
+          <h3 style={{ color: "#0f0" }}>Detalhes</h3>
+          <pre
+            style={{
+              background: "transparent",
+              color: "#0f0",
+              padding: "10px",
+              borderRadius: "4px",
+              overflowX: "auto",
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            {JSON.stringify(response, null, 2)}
+          </pre>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      )}
+
+      <div
+        id="meet"
+        style={{
+          marginTop: "20px",
+          width: "100%",
+          height: "500px",
+          backgroundColor: "#000",
+        }}
+      />
     </div>
   );
-}
+};
+
+export default Page;
