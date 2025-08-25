@@ -1,82 +1,125 @@
-# Projeto de Exemplo - WISE API
+# WiseAPI – Videoconferência Segura
 
-Este repositório demonstra o uso da biblioteca [wise-api](https://www.npmjs.com/package/wise-api/v/2.0.10) em sua versão 2.0.10.  
-A API fornece uma interface para comunicação com a [Wise (antiga TransferWise)](https://wise.com/), permitindo operações de autenticação, consultas e transações financeiras.
+WiseCare (https://wisecare.com.br/) fornece a WiseAPI, um serviço de videoconferência segura que alia segurança, acessibilidade e qualidade de vídeo em uma solução de fácil integração.  
+Ideal para aplicações em saúde e organizações que necessitam de comunicação confiável, acessível e registrada.
 
 ---
 
-## Pré-requisitos
+## Sobre
 
-1. Node.js 14 ou superior instalado.  
-2. Conta válida na [Wise](https://wise.com/) e chave de API (token de acesso).  
-3. Biblioteca instalada via npm ou yarn.
+A WiseAPI oferece:
+
+- Videoconferência segura com controle de acesso por perfis e políticas.  
+- Acessibilidade via tradução em LIBRAS com avatar em IA integrado na conferência.  
+- Gravação, armazenamento, recuperação e validação de conteúdo em blockchain.  
+- Interface configurável e integração simples em qualquer sistema web.  
+- Relatórios e registros completos das interações.  
+- Contribuição ambiental: cada videoconferência substitui deslocamentos físicos, reduzindo emissão de CO₂ e convertendo quilômetros economizados em créditos de carbono.
+
+---
+
+## Sumário
+
+1. Features  
+2. Instalação  
+3. Exemplos de Uso  
+   - Criar videoconferência  
+   - Iniciar videoconferência  
+   - Encerrar videoconferência  
+   - Listar videoconferências  
+   - Recuperar videoconferência  
+   - Deletar videoconferência 
+
+---
+
+## Features
+
+- Controle de organizações e unidades organizacionais  
+- Controle avançado de usuários e permissões  
+- Configuração de funcionalidades da conferência  
+- Customização de interface  
+- Gravação client-side e server-side  
+- Armazenamento e recuperação de vídeos gravados  
+- Manifesto de ações salvo em blockchain  
+- Integração com serviços de blockchain privadas  
+- Armazenamento de arquivos em nuvem  
 
 ---
 
 ## Instalação
 
-```bash
-git clone https://github.com/seu-usuario/wise-api-example.git
-cd wise-api-example
+Usando npm:
 
-npm install
+```bash
+npm install wise-api
 ```
 
-## Configuração
+## Exemplo de Usos
 
-Crie um arquivo .env na raiz do projeto:
+### Criar videoconferência
 
-WISE_API_TOKEN=seu_token_aqui
-WISE_API_ENV=sandbox
+import WiseApi from 'wise-api';
+const wiseapi = WiseApi({ apiKey: 'APIKEY' });
 
+const data = {
+  profile: 'DEFAULT',
+  skin: 'DEFAULT',
+  org: 'org',
+  orgUnit: 'orgUnit',
+  joinPolicy: 'PUBLIC',
+  listPolicy: 'PUBLIC'
+};
 
-WISE_API_TOKEN: Token da API fornecido pela Wise.
-
-WISE_API_ENV: Pode ser sandbox (testes) ou live (produção).
-
-## Uso
-
-Exemplo simples de inicialização e consulta de perfil:
-
-require('dotenv').config();
-const Wise = require('wise-api');
-
-// Inicialização
-const wise = new Wise({
-  token: process.env.WISE_API_TOKEN,
-  env: process.env.WISE_API_ENV || 'sandbox'
+wiseapi.session.create(data).then((response) => {
+  console.log(response);
 });
 
-// Função exemplo
-(async () => {
-  try {
-    const profiles = await wise.profiles.retrieve();
-    console.log('Perfis disponíveis:', profiles);
-  } catch (err) {
-    console.error('Erro ao consultar a API:', err.message);
-  }
-})();
 
-## Estrutura do Projeto
-.
-├── index.js         # Código de exemplo principal
-├── package.json
-├── .env.example     # Exemplo de variáveis de ambiente
-└── README.md
+### Iniciar videoconferência
 
-## Comandos Disponíveis
+import WiseApi from 'wise-api';
+const wiseapi = WiseApi({ apiKey: 'APIKEY' });
 
-npm start → Executa o exemplo principal (index.js).
+const sessionName = 'session123';
 
-npm run lint → (opcional) Verificação de estilo de código.
+const options = {
+  parentNode: document.getElementById('meet'),
+  userInfo: { displayName: 'Usuário' },
+  startWithAudioMuted: false,
+  startWithVideoMuted: false
+};
 
-Recursos Úteis
+wiseapi.session.startConference(sessionName, options).then((response) => {
+  console.log(response);
+});
 
-Documentação oficial Wise
 
-Pacote wise-api no npm
+### Encerrar videoconferência
 
-## Aviso
+import WiseApi from 'wise-api';
+const wiseapi = WiseApi({ apiKey: 'APIKEY' });
 
-Este projeto é apenas um exemplo educacional.
-Não utilize tokens reais em ambientes públicos e nunca compartilhe suas credenciais.
+wiseapi.session.stopConference().then(() => {
+  console.log('ok');
+});
+
+
+### Listar videoconferências
+
+import WiseApi from 'wise-api';
+const wiseapi = WiseApi({ apiKey: 'APIKEY' });
+
+wiseapi.session.list().then((sessions) => {
+  console.log(sessions);
+});
+
+
+### Recuperar videoconferência
+
+import WiseApi from 'wise-api';
+const wiseapi = WiseApi({ apiKey: 'APIKEY' });
+
+const sessionId = 'sks3lf6lhxqt2a1j';
+wiseapi.session.get(sessionId).then((session) => {
+  console.log(session);
+});
